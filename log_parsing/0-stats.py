@@ -22,17 +22,11 @@ def main():
         for line in sys.stdin:
             parts = line.split()
             try:
-                # Expected format:
-                # <IP> - [<date>] "GET /projects/260 HTTP/1.1" <status> <size>
-                # Minimum parts check
                 if len(parts) < 7:
                     continue
-                # File size is the last token
                 file_size = int(parts[-1])
-                # Status code is second to last
                 status_code = int(parts[-2])
 
-                # Validate the line structure more carefully
                 if parts[1] != '-':
                     continue
                 if not parts[2].startswith('['):
