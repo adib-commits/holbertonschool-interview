@@ -1,54 +1,58 @@
 #!/usr/bin/python3
-"""Log parsing script that reads stdin and computes metrics."""
+"""
+Script that reads stdin line by line and computes metrics.
+"""
+
 import sys
 
 
-def print_stats(total_size, status_counts):
+def print_stats(total_size, status_codes):
     """Print accumulated statistics."""
     print("File size: {}".format(total_size))
-    for code in sorted(status_counts):
-        if status_counts[code] > 0:
-            print("{}: {}".format(code, status_counts[code]))
 
-
-def main():
-    """Main function to parse log lines from stdin."""
-    total_size = 0
-    line_count = 0
-    valid_codes = {200, 301, 400, 401, 403, 404, 405, 500}
-    status_counts = {code: 0 for code in valid_codes}
-
-    try:
-        for line in sys.stdin:
-            parts = line.split()
-            try:
-                if len(parts) < 7:
-                    continue
-                file_size = int(parts[-1])
-                status_code = int(parts[-2])
-
-                if parts[1] != '-':
-                    continue
-                if not parts[2].startswith('['):
-                    continue
-                if '"GET' not in line or 'HTTP/1.1"' not in line:
-                    continue
-
-                total_size += file_size
-                if status_code in valid_codes:
-                    status_counts[status_code] += 1
-                line_count += 1
-
-                if line_count % 10 == 0:
-                    print_stats(total_size, status_counts)
-
-            except (ValueError, IndexError):
-                continue
-
-    except KeyboardInterrupt:
-        print_stats(total_size, status_counts)
-        raise
+    for code in sorted(status_codes.keys()):
+        if status_codes[code] > 0:
+            print("{}: {}".format(code, status_codes[code]))
 
 
 if __name__ == "__main__":
-    main()
+    total_size = 0
+    line_count = 0
+
+    valid_codes = {
+        200: 0,
+        301: 0,
+        400: 0,
+        401: 0,
+        403: 0,
+        404: 0,
+        405: 0,
+        500: 0
+    }
+
+    try:
+        for line in sys.stdin:
+            line_count += 1
+
+            try:
+                parts = line.split()
+
+                status_code = int(parts[-2])
+                file_size = int(parts[-1])
+
+                total_size += file_size
+
+                if status_code in valid_codes:
+                    valid_codes[status_code] += 1
+
+            except (IndexError, ValueError):
+                pass
+
+            if line_count % 10 == 0:
+                print_stats(total_size, valid_codes)
+
+    except KeyboardInterrupt:
+        pass
+
+    finally:
+        print_stats(total_size, valid_codes)
