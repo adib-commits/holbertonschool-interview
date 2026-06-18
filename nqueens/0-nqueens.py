@@ -5,24 +5,28 @@ import sys
 
 
 def is_safe(queens, row, col):
-    """Check if a queen can be placed"""
-    for r, c in queens:
-        if c == col:
+    """Check if position is safe"""
+    for queen in queens:
+        if queen[1] == col:
             return False
-        if abs(r - row) == abs(c - col):
+
+        if abs(queen[0] - row) == abs(queen[1] - col):
             return False
+
     return True
 
 
 def solve(n, row, queens):
-    """Backtracking solution"""
+    """Solve N Queens with backtracking"""
     if row == n:
         print(queens)
         return
 
     for col in range(n):
         if is_safe(queens, row, col):
-            solve(n, row + 1, queens + [[row, col]])
+            queens.append([row, col])
+            solve(n, row + 1, queens)
+            queens.pop()
 
 
 def main():
